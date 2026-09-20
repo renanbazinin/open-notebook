@@ -8,31 +8,31 @@ import { LanguageLoadingOverlay } from '@/components/common/LanguageLoadingOverl
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false)
-  const { i18n } = useTranslation()
+  const { i18n, ready } = useTranslation()
   const language = i18n.resolvedLanguage || i18n.language || 'en-US'
   const direction = language.startsWith('ar') ? 'rtl' : 'ltr'
 
   useLayoutEffect(() => {
+    if (!ready) return
     // Describe the language actually rendered, including translation fallbacks.
     document.documentElement.lang = language
     document.documentElement.dir = direction
-  }, [language, direction])
+  }, [language, direction, ready])
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
+  // The server cannot read the saved preference. Render the same neutral
+  // placeholder on the server and first client pass; hidden children would
+  // still hydrate with mismatched translations and Radix direction.
+  if (!mounted || !ready) return null
+
   return (
     // Radix controls and portals use context, not the document's dir attribute.
     <DirectionProvider dir={direction}>
-      {mounted ? (
-        <>
-          <LanguageLoadingOverlay />
-          {children}
-        </>
-      ) : (
-        <div style={{ visibility: 'hidden' }}>{children}</div>
-      )}
+      <LanguageLoadingOverlay />
+      {children}
     </DirectionProvider>
   )
 }

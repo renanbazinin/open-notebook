@@ -88,7 +88,8 @@ describe('I18nProvider document language', () => {
       await act(async () => { await i18n.changeLanguage(language) })
     }
 
-    expect(observations.length).toBeGreaterThanOrEqual(4)
+    expect(observations).toHaveLength(4)
+    expect(observations.map(([language]) => language)).toEqual(['ar-SA', 'fr-FR', 'ar-SA', 'en-US'])
     for (const [rendered, lang, dir] of observations) {
       expect(lang).toBe(rendered)
       expect(dir).toBe(rendered.startsWith('ar') ? 'rtl' : 'ltr')

@@ -3,6 +3,7 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resources } from './locales'
 import { languageScript } from './language-script'
+import { languageDetection } from './language-detection'
 
 beforeEach(() => {
   localStorage.clear()
@@ -25,13 +26,22 @@ async function detectLanguage() {
   await instance.init({
     resources,
     fallbackLng: 'en-US',
-    detection: { order: ['localStorage', 'navigator'], caches: ['localStorage'] },
+    detection: languageDetection,
   })
   return instance.resolvedLanguage
 }
 
 describe('document language before hydration', () => {
-  it.each([...Object.keys(resources), 'ar-sa', 'ar-EG', 'he-IL', 'fr-CA', 'zh-Hant', 'ar-SA-x-test', 'invalid_language'])(
+  it.each([['ar', 'ar-SA', 'rtl'], ['fr', 'fr-FR', 'ltr']])(
+    'uses the available translation for regionless %s', async (saved, language, direction) => {
+      localStorage.setItem('i18nextLng', saved)
+      new Function(languageScript)()
+      expect(document.documentElement.lang).toBe(language)
+      expect(document.documentElement.dir).toBe(direction)
+      expect(await detectLanguage()).toBe(language)
+    },
+  )
+  it.each([...Object.keys(resources), 'ar', 'fr', 'zh', 'ar-sa', 'ar-EG', 'he-IL', 'fr-CA', 'zh-Hant', 'ar-SA-x-test', 'invalid_language'])(
     'matches the real detector and translation fallback for saved %s', async (saved) => {
       localStorage.setItem('i18nextLng', saved)
       new Function(languageScript)()
@@ -50,8 +60,8 @@ describe('document language before hydration', () => {
     expect(document.documentElement).toHaveAttribute('dir', 'rtl')
   })
 
-  it('uses the first browser preference when nothing is saved', async () => {
-    vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['ar-SA', 'en-US'])
+  it.each(['ar-SA', 'ar'])('uses browser preference %s when nothing is saved', async (language) => {
+    vi.spyOn(navigator, 'languages', 'get').mockReturnValue([language, 'en-US'])
     new Function(languageScript)()
     expect(document.documentElement.lang).toBe(await detectLanguage())
     expect(document.documentElement.dir).toBe('rtl')

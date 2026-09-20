@@ -29,15 +29,15 @@ describe('LanguageToggle', () => {
     await openMenu()
 
     expect(screen.getAllByRole('menuitem')).toHaveLength(languages.length)
-    expect(screen.getByRole('menuitem', { name: 'Arabic' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: 'Italian' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'العربية' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Italiano' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: i18n.t('common.french') })).toBeInTheDocument()
   })
 
   it('selects Arabic outside Settings and restores LTR when selecting French', async () => {
     render(<I18nProvider><LanguageToggle /></I18nProvider>)
     await openMenu()
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Arabic' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'العربية' }))
 
     await waitFor(() => {
       expect(i18n.language).toBe('ar-SA')
@@ -73,8 +73,8 @@ describe('LanguageToggle', () => {
     render(<LanguageToggle />)
     await openMenu()
 
-    expect(screen.getByRole('menuitem', { name: 'Arabic' })).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: 'Italian' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'العربية' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Italiano' })).toBeInTheDocument()
   })
 
   it.each(['zh-TW', 'zh-Hant'])('keeps the Traditional Chinese selection distinct for %s', async (language) => {
