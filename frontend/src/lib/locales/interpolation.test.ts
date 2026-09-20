@@ -32,6 +32,34 @@ describe('i18next interpolation', () => {
     expect(i18n.t('podcasts.usedByCount', { count: 3 })).toBe('Used by 3 episodes')
   })
 
+  it.each([
+    [0, 'لا تستخدمه أي حلقة'],
+    [1, 'تستخدمه حلقة واحدة'],
+    [2, 'تستخدمه حلقتان'],
+    [3, 'تستخدمه 3 حلقات'],
+    [10, 'تستخدمه 10 حلقات'],
+    [11, 'تستخدمه 11 حلقة'],
+    [99, 'تستخدمه 99 حلقة'],
+    [100, 'تستخدمه 100 حلقة'],
+    [101, 'تستخدمه 101 حلقة'],
+    [102, 'تستخدمه 102 حلقة'],
+    [103, 'تستخدمه 103 حلقات'],
+    [1.5, 'تستخدمه 1.5 حلقة'],
+  ])('uses the Arabic plural form for %s episodes', (count, expected) => {
+    expect(i18n.t('podcasts.usedByCount', { count, lng: 'ar-SA' })).toBe(expected)
+  })
+
+  it.each(Object.keys(resources).filter(lng => lng !== 'ar-SA'))(
+    'keeps episode counts interpolated in %s', (lng) => {
+      const other = resources[lng as keyof typeof resources].translation.podcasts.usedByCount_other
+      for (const count of [0, 2, 3, 11, 100]) {
+        expect(i18n.t('podcasts.usedByCount', { count, lng })).toBe(
+          other.replace('{{count}}', String(count)),
+        )
+      }
+    },
+  )
+
   it('does not escape interpolated values (React escapes at render)', () => {
     expect(i18n.t('notebooks.deleteNotebookDesc', { name: 'Research & Notes' })).toBe(
       'Are you sure you want to delete "Research & Notes"? This action cannot be undone.',
