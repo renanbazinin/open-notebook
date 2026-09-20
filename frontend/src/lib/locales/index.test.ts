@@ -89,6 +89,14 @@ describe('Placeholder Parity', () => {
         const enSet = doubleBracePlaceholders(enValue)
         const localeSet = doubleBracePlaceholders(localeValue)
 
+        // Zero, singular and dual forms may express the number in words
+        // (Arabic "one episode" / "two episodes") instead of interpolating it.
+        // Other variables, and count in few/many/other forms, remain required.
+        if (/_(zero|one|two)$/.test(key)) {
+          enSet.delete('count')
+          localeSet.delete('count')
+        }
+
         const missing = [...enSet].filter(p => !localeSet.has(p))
         const extra = [...localeSet].filter(p => !enSet.has(p))
         if (missing.length || extra.length) {

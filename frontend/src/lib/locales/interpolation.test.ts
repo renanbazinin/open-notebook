@@ -49,16 +49,30 @@ describe('i18next interpolation', () => {
     expect(i18n.t('podcasts.usedByCount', { count, lng: 'ar-SA' })).toBe(expected)
   })
 
-  it.each(Object.keys(resources).filter(lng => lng !== 'ar-SA'))(
-    'keeps episode counts interpolated in %s', (lng) => {
-      const other = resources[lng as keyof typeof resources].translation.podcasts.usedByCount_other
-      for (const count of [0, 2, 3, 11, 100]) {
-        expect(i18n.t('podcasts.usedByCount', { count, lng })).toBe(
-          other.replace('{{count}}', String(count)),
-        )
-      }
-    },
-  )
+  it.each([
+    ['fr-FR', 0, 'Utilisé par 0 épisodes'],
+    ['pt-BR', 0, 'Usado por 0 episódios'],
+    ['bn-IN', 0, '0টি এপিসোড দ্বারা ব্যবহৃত'],
+    ['bn-IN', 1, '1টি এপিসোড দ্বারা ব্যবহৃত'],
+    ['bn-IN', 2, '2টি এপিসোড দ্বারা ব্যবহৃত'],
+    ['ru-RU', 1, 'Используется в 1 эпизоде'],
+    ['ru-RU', 2, 'Используется в 2 эпизодах'],
+    ['ru-RU', 5, 'Используется в 5 эпизодах'],
+    ['ru-RU', 21, 'Используется в 21 эпизоде'],
+    ['ru-RU', 31, 'Используется в 31 эпизоде'],
+    ['ru-RU', 101, 'Используется в 101 эпизоде'],
+    ['pl-PL', 1, 'Używany przez 1 odcinek'],
+    ['pl-PL', 2, 'Używany przez 2 odcinki'],
+    ['pl-PL', 3, 'Używany przez 3 odcinki'],
+    ['pl-PL', 4, 'Używany przez 4 odcinki'],
+    ['pl-PL', 5, 'Używany przez 5 odcinków'],
+    ['pl-PL', 12, 'Używany przez 12 odcinków'],
+    ['pl-PL', 22, 'Używany przez 22 odcinki'],
+    ['pl-PL', 24, 'Używany przez 24 odcinki'],
+    ['pl-PL', 25, 'Używany przez 25 odcinków'],
+  ])('renders %s episode count %s', (lng, count, expected) => {
+    expect(i18n.t('podcasts.usedByCount', { count, lng })).toBe(expected)
+  })
 
   it('does not escape interpolated values (React escapes at render)', () => {
     expect(i18n.t('notebooks.deleteNotebookDesc', { name: 'Research & Notes' })).toBe(
