@@ -1,10 +1,11 @@
-import { act, cleanup, render } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { arSA } from '@/lib/locales'
 import { languageScript } from '@/lib/language-script'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { I18nProvider } from './I18nProvider'
 
 beforeEach(async () => {
@@ -22,6 +23,34 @@ afterEach(() => {
 })
 
 describe('I18nProvider document language', () => {
+  it('gives Radix tabs RTL arrow navigation and restores LTR after switching', async () => {
+    await i18n.changeLanguage('ar-SA')
+    render(
+      <I18nProvider>
+        <Tabs defaultValue="sources">
+          <TabsList>
+            <TabsTrigger value="sources">Sources</TabsTrigger>
+            <TabsTrigger value="notes">Notes</TabsTrigger>
+            <TabsTrigger value="chat">Chat</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </I18nProvider>,
+    )
+    const sources = screen.getByRole('tab', { name: 'Sources' })
+    const notes = screen.getByRole('tab', { name: 'Notes' })
+    expect(sources.closest('[data-slot="tabs"]')).toHaveAttribute('dir', 'rtl')
+    act(() => { sources.focus() })
+    fireEvent.keyDown(sources, { key: 'ArrowLeft' })
+    await waitFor(() => expect(notes).toHaveFocus())
+    fireEvent.keyDown(notes, { key: 'ArrowRight' })
+    await waitFor(() => expect(sources).toHaveFocus())
+
+    await act(async () => { await i18n.changeLanguage('en-US') })
+    expect(sources.closest('[data-slot="tabs"]')).toHaveAttribute('dir', 'ltr')
+    fireEvent.keyDown(sources, { key: 'ArrowRight' })
+    await waitFor(() => expect(notes).toHaveFocus())
+  })
+
   it('applies a saved Arabic language on mount without visiting Settings', async () => {
     localStorage.setItem('i18nextLng', 'ar-SA')
     // The head script runs before the provider or the language detector mounts.

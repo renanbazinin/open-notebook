@@ -46,6 +46,7 @@ describe('LanguageToggle', () => {
     })
 
     await openMenu()
+    expect(screen.getByRole('menu')).toHaveAttribute('dir', 'rtl')
     expect(screen.getByRole('menuitem', { name: 'العربية' })).toHaveClass('bg-accent')
     fireEvent.click(screen.getByRole('menuitem', { name: i18n.t('common.french') }))
 
@@ -54,6 +55,8 @@ describe('LanguageToggle', () => {
       expect(document.documentElement).toHaveAttribute('lang', 'fr-FR')
       expect(document.documentElement).toHaveAttribute('dir', 'ltr')
     })
+    await openMenu()
+    expect(screen.getByRole('menu')).toHaveAttribute('dir', 'ltr')
   })
 
   it('translates Arabic and Italian names in the active menu language', async () => {
