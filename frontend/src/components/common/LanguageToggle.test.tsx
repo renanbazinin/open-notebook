@@ -69,7 +69,11 @@ describe('LanguageToggle', () => {
   })
 
   it('uses translated English fallback names for an unavailable locale', async () => {
+    await i18n.changeLanguage('fr-FR')
+    expect(i18n.resolvedLanguage).toBe('fr-FR')
     await i18n.changeLanguage('he-IL')
+    expect(i18n.language).toBe('he-IL')
+    expect(i18n.resolvedLanguage).toBe('en-US')
     render(<LanguageToggle />)
     await openMenu()
 

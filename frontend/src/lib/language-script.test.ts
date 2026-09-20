@@ -32,6 +32,20 @@ async function detectLanguage() {
 }
 
 describe('document language before hydration', () => {
+  it.each([
+    ['zh-Hant', 'zh-TW'], ['zh-Hans', 'zh-CN'],
+    ['zh-Hant-HK', 'zh-TW'], ['zh-Hans-SG', 'zh-CN'],
+  ])('resolves Chinese script preference %s to %s on startup and detection', async (preference, language) => {
+    for (const source of ['saved', 'browser']) {
+      localStorage.clear()
+      vi.spyOn(navigator, 'languages', 'get').mockReturnValue(source === 'browser' ? [preference] : ['en-US'])
+      if (source === 'saved') localStorage.setItem('i18nextLng', preference)
+      new Function(languageScript)()
+      expect(document.documentElement.lang).toBe(language)
+      expect(document.documentElement.dir).toBe('ltr')
+      expect(await detectLanguage()).toBe(language)
+    }
+  })
   it.each([['ar', 'ar-SA', 'rtl'], ['fr', 'fr-FR', 'ltr']])(
     'uses the available translation for regionless %s', async (saved, language, direction) => {
       localStorage.setItem('i18nextLng', saved)

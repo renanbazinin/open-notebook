@@ -6,7 +6,11 @@ export function resolveLanguage(preference: string, available: readonly string[]
     const parts = code.split('-')
     const script = parts.length > 2 && parts[parts.length - 2] !== 'x'
       ? parts.slice(0, -1).join('-') : ''
-    const match = [code, script, parts[0]].find(candidate => available.includes(candidate))
+    // The registry uses regional tags for the two Chinese writing systems.
+    const chineseVariant = parts[0] === 'zh'
+      ? parts[1] === 'Hant' ? 'zh-TW' : parts[1] === 'Hans' ? 'zh-CN' : ''
+      : ''
+    const match = [code, script, chineseVariant, parts[0]].find(candidate => available.includes(candidate))
     if (match) return match
 
     // A bare language can use its only registered variant. Do not guess when
@@ -19,4 +23,10 @@ export function resolveLanguage(preference: string, available: readonly string[]
     // Invalid or unavailable preferences use the registered English fallback.
   }
   return 'en-US'
+}
+
+// Like resolveLanguage, this is embedded in the head script and must not
+// reference module state. Only Arabic among the registered UI locales is RTL.
+export function languageToDirection(language: string): 'rtl' | 'ltr' {
+  return language.split('-')[0] === 'ar' ? 'rtl' : 'ltr'
 }

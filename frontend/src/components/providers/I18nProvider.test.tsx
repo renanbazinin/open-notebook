@@ -61,6 +61,10 @@ describe('I18nProvider document language', () => {
     await i18n.changeLanguage()
     expect(i18n.language).toBe('ar-SA')
 
+    // Verify the provider actively reapplies metadata, independently of the
+    // earlier bootstrap script assertions.
+    document.documentElement.lang = 'en-US'
+    document.documentElement.dir = 'ltr'
     render(<I18nProvider><main>Notebook</main></I18nProvider>)
 
     expect(document.documentElement).toHaveAttribute('lang', 'ar-SA')

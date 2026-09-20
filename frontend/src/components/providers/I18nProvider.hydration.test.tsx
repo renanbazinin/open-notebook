@@ -57,7 +57,7 @@ function TranslatedTabs() {
   )
 }
 
-it.each(['ar-SA', 'ar'])('hydrates saved %s from an English server without mismatched text or Radix direction', async (language) => {
+it.each(['ar-SA', 'ar'])('hydrates the empty server placeholder before mounting saved %s content', async (language) => {
   const server = createInstance()
   await server.init({ resources, lng: 'en-US', fallbackLng: 'en-US' })
   const serverMarkup = renderToString(
@@ -83,6 +83,8 @@ it.each(['ar-SA', 'ar'])('hydrates saved %s from an English server without misma
       )
     })
     expect(onRecoverableError).not.toHaveBeenCalled()
+    // The empty SSR result is intentional: translated text and Radix controls
+    // mount only after hydration, when the saved locale is ready.
     expect(serverMarkup).toBe('')
     expect(container.querySelector('[role="tab"]')).toHaveTextContent(resources['ar-SA'].translation.sources.title)
     expect(container.querySelector('[data-slot="tabs"]')).toHaveAttribute('dir', 'rtl')

@@ -10,14 +10,15 @@ Arabic needs RTL on every route, including when the user restores a saved langua
 
 ## Decision
 
-Set `html.lang` and `html.dir` centrally in `I18nProvider`, using i18next's resolved translation language rather than an unsupported requested language. Arabic language codes use RTL via the `ar` prefix; other currently supported languages use LTR. Apply changes in a layout effect before the translated React commit is painted.
+Set `html.lang` and `html.dir` centrally in `I18nProvider`, using i18next's resolved translation language rather than an unsupported requested language. A shared `languageToDirection` helper assigns RTL to Arabic language codes and LTR to other currently supported languages; both the provider and inline startup script use it. Apply changes in a layout effect before the translated React commit is painted.
 
-A small inline script in the root layout applies the saved preference, or the first browser preference, before hydration. It embeds only registered locale codes and a self-contained resolver shared with the browser language detector. The resolver follows the language/script/base hierarchy and maps a regionless tag to its sole registered variant (`ar` → `ar-SA`, `fr` → `fr-FR`). Ambiguous or unavailable preferences use English. The provider remains authoritative after initialization.
+A small inline script in the root layout applies the saved preference, or the first browser preference, before hydration. It embeds only registered locale codes and a self-contained resolver shared with the browser language detector. The resolver follows the language/script/base hierarchy, maps Chinese script tags (`zh-Hant` → `zh-TW`, `zh-Hans` → `zh-CN`), and maps a regionless tag to its sole registered variant (`ar` → `ar-SA`, `fr` → `fr-FR`). Ambiguous or unavailable preferences use English. The provider remains authoritative after initialization.
 
-Render a neutral empty placeholder on the server and first client pass, then mount children once the client and language detector are ready. A hidden wrapper still renders language-dependent children and cannot prevent hydration mismatches. Supply the same direction through Radix `DirectionProvider` for controls, keyboard navigation, and portals. The Markdown editor reads this context to enable its own RTL pane layout.
+Render a neutral empty placeholder on the server and first client pass, then mount children once the client and language detector are ready. Supply the same direction through Radix `DirectionProvider` for controls, keyboard navigation, and portals. The Markdown editor reads this context to enable its own RTL pane layout.
 
 ## Alternatives considered
 
+- A hidden wrapper was rejected because it would still render language-dependent children during hydration and allow mismatches.
 - Settings-only or per-page effects leave gaps during navigation and reloads.
 - Passive effects can update direction after a translated commit paints.
 - Server-side cookie detection would require a new persistence and rendering contract for a preference currently stored in localStorage.
