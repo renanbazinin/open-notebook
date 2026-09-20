@@ -31,6 +31,8 @@ export const enUS = {
     german: "Deutsch",
     polish: "Polski",
     turkish: "Türkçe",
+    arabic: "Arabic",
+    italian: "Italian",
     source: "Source",
     notebook: "Notebook",
     podcast: "Podcast",

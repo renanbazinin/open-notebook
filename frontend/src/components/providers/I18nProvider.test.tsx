@@ -1,7 +1,10 @@
 import { act, cleanup, render } from '@testing-library/react'
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { arSA } from '@/lib/locales'
+import { languageScript } from '@/lib/language-script'
 import { I18nProvider } from './I18nProvider'
 
 beforeEach(async () => {
@@ -20,12 +23,47 @@ afterEach(() => {
 
 describe('I18nProvider document language', () => {
   it('applies a saved Arabic language on mount without visiting Settings', async () => {
-    await i18n.changeLanguage('ar-SA')
+    localStorage.setItem('i18nextLng', 'ar-SA')
+    // The head script runs before the provider or the language detector mounts.
+    new Function(languageScript)()
+    expect(document.documentElement).toHaveAttribute('lang', 'ar-SA')
+    expect(document.documentElement).toHaveAttribute('dir', 'rtl')
+    // Omitting the argument uses the real browser detector's saved preference.
+    await i18n.changeLanguage()
+    expect(i18n.language).toBe('ar-SA')
 
     render(<I18nProvider><main>Notebook</main></I18nProvider>)
 
     expect(document.documentElement).toHaveAttribute('lang', 'ar-SA')
     expect(document.documentElement).toHaveAttribute('dir', 'rtl')
+  })
+
+  it('updates metadata before descendant passive effects on mount and switching', async () => {
+    const observations: string[][] = []
+    function MetadataProbe() {
+      const { i18n: instance } = useTranslation()
+      const renderedLanguage = instance.resolvedLanguage!
+      useEffect(() => {
+        observations.push([
+          renderedLanguage,
+          document.documentElement.lang,
+          document.documentElement.dir,
+        ])
+      }, [renderedLanguage])
+      return <main>{instance.t('common.language')}</main>
+    }
+
+    await i18n.changeLanguage('ar-SA')
+    render(<I18nProvider><MetadataProbe /></I18nProvider>)
+    for (const language of ['fr-FR', 'ar-SA', 'en-US']) {
+      await act(async () => { await i18n.changeLanguage(language) })
+    }
+
+    expect(observations.length).toBeGreaterThanOrEqual(4)
+    for (const [rendered, lang, dir] of observations) {
+      expect(lang).toBe(rendered)
+      expect(dir).toBe(rendered.startsWith('ar') ? 'rtl' : 'ltr')
+    }
   })
 
   it('updates direction and language when switching Arabic, French, and English', async () => {

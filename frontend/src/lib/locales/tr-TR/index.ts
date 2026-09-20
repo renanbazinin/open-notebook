@@ -33,6 +33,8 @@ export const trTR = {
     german: "Deutsch",
     polish: "Polski",
     turkish: "Türkçe",
+    arabic: "Arapça",
+    italian: "İtalyanca",
     source: "Kaynak",
     notebook: "Defter",
     podcast: "Podcast",

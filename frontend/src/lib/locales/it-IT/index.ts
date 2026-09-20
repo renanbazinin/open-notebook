@@ -33,6 +33,8 @@ export const itIT = {
     german: "Deutsch",
     polish: "Polski",
     turkish: "Türkçe",
+    arabic: "Arabo",
+    italian: "Italiano",
     source: "Fonte",
     notebook: "Quaderno",
     podcast: "Podcast",

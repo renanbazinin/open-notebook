@@ -33,6 +33,8 @@ export const jaJP = {
     german: "Deutsch",
     polish: "Polski",
     turkish: "Türkçe",
+    arabic: "アラビア語",
+    italian: "イタリア語",
     source: "ソース",
     notebook: "ノートブック",
     podcast: "ポッドキャスト",

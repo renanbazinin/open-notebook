@@ -33,6 +33,8 @@ export const plPL = {
     german: "Niemiecki",
     polish: "Polski",
     turkish: "Türkçe",
+    arabic: "Arabski",
+    italian: "Włoski",
     source: "Źródło",
     notebook: "Notatnik",
     podcast: "Podcast",

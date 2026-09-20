@@ -33,6 +33,8 @@ export const frFR = {
     german: "Deutsch",
     polish: "Polski",
     turkish: "Türkçe",
+    arabic: "Arabe",
+    italian: "Italien",
     source: "Source",
     notebook: "Carnet",
     podcast: "Podcast",

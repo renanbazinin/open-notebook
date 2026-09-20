@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import '@/lib/i18n'
 import { LanguageLoadingOverlay } from '@/components/common/LanguageLoadingOverlay'
@@ -10,7 +10,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation()
   const language = i18n.resolvedLanguage || i18n.language || 'en-US'
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Describe the language actually rendered, including translation fallbacks.
     document.documentElement.lang = language
     document.documentElement.dir = language.startsWith('ar') ? 'rtl' : 'ltr'

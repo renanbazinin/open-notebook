@@ -20,8 +20,8 @@ export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
   
   // Keep the actual language code for proper comparison
   const currentLang = language || 'en-US'
-  // Preserve existing translated names; new locales use their registered label.
-  const translatedLabels: Partial<Record<LanguageCode, string>> = {
+  // Exhaustive so adding a locale also requires its translated menu name.
+  const translatedLabels: Record<LanguageCode, string> = {
     'en-US': t('common.english'),
     'ca-ES': t('common.catalan'),
     'zh-CN': t('common.chinese'),
@@ -35,6 +35,8 @@ export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
     'de-DE': t('common.german'),
     'pl-PL': t('common.polish'),
     'tr-TR': t('common.turkish'),
+    'it-IT': t('common.italian'),
+    'ar-SA': t('common.arabic'),
   }
 
   return (
@@ -51,7 +53,7 @@ export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {languages.map(({ code, label }) => {
+        {languages.map(({ code }) => {
           // Keep Simplified and Traditional Chinese distinct when matching variants.
           const isSelected = code === 'zh-CN'
             ? currentLang === code || currentLang.startsWith('zh-Hans') || currentLang === 'zh'
@@ -65,7 +67,7 @@ export function LanguageToggle({ iconOnly = false }: LanguageToggleProps) {
               onClick={() => setLanguage(code)}
               className={isSelected ? 'bg-accent' : ''}
             >
-              <span dir="auto">{translatedLabels[code] || label}</span>
+              <span dir="auto">{translatedLabels[code]}</span>
             </DropdownMenuItem>
           )
         })}

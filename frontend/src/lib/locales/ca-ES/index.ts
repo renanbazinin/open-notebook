@@ -33,6 +33,8 @@ export const caES = {
     german: "Deutsch",
     polish: "Polski",
     turkish: "Türkçe",
+    arabic: "Àrab",
+    italian: "Italià",
     source: "Font",
     notebook: "Quadern",
     podcast: "Podcast",
