@@ -47,6 +47,30 @@ const straySingleBraceTokens = (value: string): string[] => {
   return [...withoutDouble.matchAll(/\{\s*\w+\s*\}/g)].map(m => m[0])
 }
 
+// Only these Arabic sentences spell out zero/one/two rather than displaying a
+// number. All other keys and locales retain the full placeholder contract.
+const arabicWordedCounts = new Set([
+  'podcasts.usedByCount_zero',
+  'podcasts.usedByCount_one',
+  'podcasts.usedByCount_two',
+])
+
+const placeholderProblems = (code: string, key: string, enValue: string, localeValue: string) => {
+  const enSet = doubleBracePlaceholders(enValue)
+  const localeSet = doubleBracePlaceholders(localeValue)
+  const mayOmitCount = code === 'ar-SA' && arabicWordedCounts.has(key)
+
+  return {
+    missing: [...enSet].filter(p => !localeSet.has(p) && !(p === 'count' && mayOmitCount)),
+    extra: [...localeSet].filter(p => !enSet.has(p)),
+    // Check against the original English placeholders, including an optional
+    // count: spelling out a number never makes a literal {count} valid.
+    stray: straySingleBraceTokens(localeValue).filter(tok =>
+      enSet.has(tok.replace(/[{}\s]/g, '')),
+    ),
+  }
+}
+
 describe('Locale Parity', () => {
   const enKeys = getKeys(enUS)
 
@@ -71,6 +95,27 @@ describe('Placeholder Parity', () => {
 
   const locales = Object.entries(resources).filter(([code]) => code !== 'en-US')
 
+  it.each(['fr-FR', 'ru-RU'])('rejects a dropped count in %s singular forms', code => {
+    expect(placeholderProblems(code, 'podcasts.usedByCount_one', 'Used by {{count}} episode', 'Used by one episode').missing).toEqual(['count'])
+  })
+
+  it.each(['zero', 'one', 'two'])('allows the explicit Arabic %s sentence', suffix => {
+    expect(placeholderProblems('ar-SA', `podcasts.usedByCount_${suffix}`, 'Used by {{count}} episodes', 'تستخدمه حلقة واحدة')).toEqual({missing: [], extra: [], stray: []})
+  })
+
+  it.each(['zero', 'one', 'two'])('still rejects an Arabic {count} typo in the %s exception', suffix => {
+    expect(placeholderProblems('ar-SA', `podcasts.usedByCount_${suffix}`, 'Used by {{count}} episodes', 'تستخدمه {count} حلقة').stray).toEqual(['{count}'])
+  })
+
+  it.each(['podcasts.usedByCount_few', 'podcasts.usedByCount_many', 'podcasts.usedByCount_other', 'unrelated_one'])('requires count in Arabic %s', key => {
+    expect(placeholderProblems('ar-SA', key, '{{count}} items', 'عناصر').missing).toEqual(['count'])
+  })
+
+  it('keeps other placeholders required in the Arabic exceptions', () => {
+    expect(placeholderProblems('ar-SA', 'podcasts.usedByCount_one', '{{name}}: {{count}} episode', 'حلقة واحدة').missing).toEqual(['name'])
+    expect(placeholderProblems('ar-SA', 'podcasts.usedByCount_one', '{{count}} episode', '{{unexpected}}').extra).toEqual(['unexpected'])
+  })
+
   it.each(locales.map(([code, resource]) => [code, resource] as const))(
     '%s interpolation placeholders should match en-US',
     (code, resource) => {
@@ -86,31 +131,13 @@ describe('Placeholder Parity', () => {
         // Missing keys are covered by the parity test; skip here.
         if (localeValue === undefined) continue
 
-        const enSet = doubleBracePlaceholders(enValue)
-        const localeSet = doubleBracePlaceholders(localeValue)
-
-        // Zero, singular and dual forms may express the number in words
-        // (Arabic "one episode" / "two episodes") instead of interpolating it.
-        // Other variables, and count in few/many/other forms, remain required.
-        if (/_(zero|one|two)$/.test(key)) {
-          enSet.delete('count')
-          localeSet.delete('count')
-        }
-
-        const missing = [...enSet].filter(p => !localeSet.has(p))
-        const extra = [...localeSet].filter(p => !enSet.has(p))
+        const { missing, extra, stray } = placeholderProblems(code, key, enValue, localeValue)
         if (missing.length || extra.length) {
           mismatches.push(
             `${key}: missing [${missing.join(', ')}] extra [${extra.join(', ')}]`,
           )
         }
 
-        // A stray single-brace token is only drift if en-US expects a
-        // placeholder there (i.e. the token name is a real placeholder).
-        const stray = straySingleBraceTokens(localeValue).filter(tok => {
-          const name = tok.replace(/[{}\s]/g, '')
-          return enSet.has(name)
-        })
         if (stray.length) {
           strays.push(`${key}: ${stray.join(', ')}`)
         }

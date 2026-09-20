@@ -74,6 +74,21 @@ describe('i18next interpolation', () => {
     expect(i18n.t('podcasts.usedByCount', { count, lng })).toBe(expected)
   })
 
+  // These labels express a total, not a number followed by an inflected noun.
+  // Exercise the rendered output across all Arabic plural categories, including
+  // zero, where i18next can otherwise select an explicit _zero override.
+  describe.each([
+    ['sources.insightsCount', 'عدد الرؤى: ', ''],
+    ['notebooks.deleteNotebookNotes', 'عدد الملاحظات التي ستُحذف نهائيًا: ', '.'],
+    ['searchPage.resultsFound', 'عدد النتائج: ', ''],
+    ['common.individualAnswers', 'عدد الإجابات الفردية: ', ''],
+    ['models.autoAssignSuccess', 'عدد النماذج الافتراضية التي تم تعيينها تلقائيًا: ', ''],
+  ])('Arabic count label %s', (key, label, suffix) => {
+    it.each([0, 1, 2, 3, 10, 11, 99, 100, 101, 102, 103, 1.5])('renders count %s', count => {
+      expect(i18n.t(key, { count, lng: 'ar-SA' })).toBe(`${label}${count}${suffix}`)
+    })
+  })
+
   it('does not escape interpolated values (React escapes at render)', () => {
     expect(i18n.t('notebooks.deleteNotebookDesc', { name: 'Research & Notes' })).toBe(
       'Are you sure you want to delete "Research & Notes"? This action cannot be undone.',
