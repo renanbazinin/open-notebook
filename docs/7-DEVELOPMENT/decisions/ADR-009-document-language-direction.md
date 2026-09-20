@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-09
-- **Related**: #1277, #1367, discussion [#1338](https://github.com/lfnovo/open-notebook/discussions/1338)
+- **Related**: [PR #1277](https://github.com/lfnovo/open-notebook/pull/1277), [PR #1367](https://github.com/lfnovo/open-notebook/pull/1367), discussion [#1338](https://github.com/lfnovo/open-notebook/discussions/1338)
 
 ## Context
 

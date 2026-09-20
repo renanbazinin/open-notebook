@@ -18,7 +18,7 @@ afterEach(() => {
   document.documentElement.dir = 'ltr'
 })
 
-it('keeps the bootstrap direction and withholds children while detection is pending', async () => {
+it('preserves bootstrap metadata while detection is pending, then applies the detected locale', async () => {
   localStorage.setItem('i18nextLng', 'ar-SA')
   new Function(languageScript)()
   let finishDetection!: (language: string) => void
@@ -38,11 +38,13 @@ it('keeps the bootstrap direction and withholds children while detection is pend
   expect(document.documentElement).toHaveAttribute('dir', 'rtl')
 
   await act(async () => {
-    finishDetection('ar-SA')
+    finishDetection('fr-FR')
     await initialized
   })
-  expect(container.querySelector('[role="tab"]')).toHaveTextContent(resources['ar-SA'].translation.sources.title)
-  expect(container.querySelector('[data-slot="tabs"]')).toHaveAttribute('dir', 'rtl')
+  expect(container.querySelector('[role="tab"]')).toHaveTextContent(resources['fr-FR'].translation.sources.title)
+  expect(container.querySelector('[data-slot="tabs"]')).toHaveAttribute('dir', 'ltr')
+  expect(document.documentElement).toHaveAttribute('lang', 'fr-FR')
+  expect(document.documentElement).toHaveAttribute('dir', 'ltr')
 })
 
 function TranslatedTabs() {
