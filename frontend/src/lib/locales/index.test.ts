@@ -99,8 +99,24 @@ describe('Placeholder Parity', () => {
     expect(placeholderProblems(code, 'podcasts.usedByCount_one', 'Used by {{count}} episode', 'Used by one episode').missing).toEqual(['count'])
   })
 
-  it.each(['zero', 'one', 'two'])('allows the explicit Arabic %s sentence', suffix => {
-    expect(placeholderProblems('ar-SA', `podcasts.usedByCount_${suffix}`, 'Used by {{count}} episodes', 'تستخدمه حلقة واحدة')).toEqual({missing: [], extra: [], stray: []})
+  const arLeaves = getLeafStrings(resources['ar-SA'].translation)
+
+  it.each([
+    ['podcasts.usedByCount_zero', 'لا تستخدمه أي حلقة'],
+    ['podcasts.usedByCount_one', 'تستخدمه حلقة واحدة'],
+    ['podcasts.usedByCount_two', 'تستخدمه حلقتان'],
+  ])('validates the real Arabic worded count at %s', (key, expected) => {
+    const enValue = enLeaves[key]
+    const arValue = arLeaves[key]
+
+    // Pin the actual worded forms, not a synthetic example of the exception.
+    // Runtime plural selection is covered separately in interpolation.test.ts.
+    expect(arValue).toBe(expected)
+    expect(doubleBracePlaceholders(enValue)).toContain('count')
+    expect(doubleBracePlaceholders(arValue)).not.toContain('count')
+    expect(placeholderProblems('ar-SA', key, enValue, arValue)).toEqual({
+      missing: [], extra: [], stray: [],
+    })
   })
 
   it.each(['zero', 'one', 'two'])('still rejects an Arabic {count} typo in the %s exception', suffix => {
